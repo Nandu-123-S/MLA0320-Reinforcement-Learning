@@ -1,0 +1,37 @@
+import random
+
+GRID = 5
+goal = (4, 4)
+obstacles = [(2,2), (3,1)]
+
+def high_level_policy(state):
+    # choose direction toward goal
+    x, y = state
+    gx, gy = goal
+    if x < gx: return 'down'
+    elif y < gy: return 'right'
+    else: return 'stay'
+
+def low_level_control(state, action):
+    x, y = state
+
+    if action == 'down': x += 1
+    elif action == 'right': y += 1
+
+    new_state = (min(4,x), min(4,y))
+
+    # obstacle avoidance
+    if new_state in obstacles:
+        return state  # stay
+    return new_state
+
+# Simulation
+state = (0,0)
+path = [state]
+
+while state != goal:
+    high_action = high_level_policy(state)
+    state = low_level_control(state, high_action)
+    path.append(state)
+
+print("Path:", path)
