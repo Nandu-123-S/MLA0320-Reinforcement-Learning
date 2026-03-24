@@ -1,0 +1,13 @@
+robots = ["R1", "R2"]
+tasks = ["pick", "deliver"]
+
+def high_level():
+    return {robots[0]: "pick", robots[1]: "deliver"}
+
+def low_level(robot, task):
+    return f"{robot} performing {task}"
+
+plan = high_level()
+
+for r in robots:
+    print(low_level(r, plan[r]))
