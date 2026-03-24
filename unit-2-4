@@ -1,0 +1,85 @@
+import numpy as np
+import random
+
+# Grid size
+GRID_SIZE = 5
+ACTIONS = ['up', 'down', 'left', 'right']
+
+# Parameters
+ALPHA = 0.1
+GAMMA = 0.9
+EPSILON = 0.1
+EPISODES = 500
+
+# Initialize Q-table
+Q = {}
+
+# Obstacles
+obstacles = [(1, 1), (2, 3)]
+
+# Track cleaned cells
+cleaned = set()
+
+def step(state, action):
+    x, y = state
+
+    if action == 'up':
+        x = max(0, x - 1)
+    elif action == 'down':
+        x = min(GRID_SIZE - 1, x + 1)
+    elif action == 'left':
+        y = max(0, y - 1)
+    elif action == 'right':
+        y = min(GRID_SIZE - 1, y + 1)
+
+    next_state = (x, y)
+
+    # Check obstacle
+    if next_state in obstacles:
+        return state, -5
+
+    # Reward for cleaning
+    if next_state not in cleaned:
+        cleaned.add(next_state)
+        return next_state, 5
+    else:
+        return next_state, -1
+
+def epsilon_greedy(state):
+    if random.uniform(0, 1) < EPSILON:
+        return random.choice(ACTIONS)
+    else:
+        q_vals = [Q.get((state, a), 0) for a in ACTIONS]
+        return ACTIONS[np.argmax(q_vals)]
+
+# SARSA Training
+for _ in range(EPISODES):
+    state = (0, 0)
+    action = epsilon_greedy(state)
+
+    while True:
+        next_state, reward = step(state, action)
+        next_action = epsilon_greedy(next_state)
+
+        # SARSA update
+        Q[(state, action)] = Q.get((state, action), 0) + ALPHA * (
+            reward + GAMMA * Q.get((next_state, next_action), 0) - Q.get((state, action), 0)
+        )
+
+        state = next_state
+        action = next_action
+
+        # Stop if all cells cleaned
+        if len(cleaned) >= GRID_SIZE * GRID_SIZE - len(obstacles):
+            break
+
+    cleaned.clear()
+
+# Display learned policy
+print("Learned Policy:")
+for i in range(GRID_SIZE):
+    for j in range(GRID_SIZE):
+        state = (i, j)
+        q_vals = [Q.get((state, a), 0) for a in ACTIONS]
+        best_action = ACTIONS[np.argmax(q_vals)]
+        print(f"{state} -> {best_action}")
