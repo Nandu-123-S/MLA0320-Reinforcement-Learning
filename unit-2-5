@@ -1,0 +1,72 @@
+import numpy as np
+import random
+
+# Grid size
+GRID_SIZE = 5
+ACTIONS = ['up', 'down', 'left', 'right']
+
+# Parameters
+ALPHA = 0.1
+GAMMA = 0.9
+EPSILON = 0.1
+EPISODES = 500
+
+# Initialize Q-table
+Q = {}
+
+food = (4, 4)
+ghost = (2, 2)
+
+def step(state, action):
+    x, y = state
+
+    if action == 'up':
+        x = max(0, x - 1)
+    elif action == 'down':
+        x = min(GRID_SIZE - 1, x + 1)
+    elif action == 'left':
+        y = max(0, y - 1)
+    elif action == 'right':
+        y = min(GRID_SIZE - 1, y + 1)
+
+    next_state = (x, y)
+
+    if next_state == food:
+        return next_state, 10
+    elif next_state == ghost:
+        return next_state, -10
+    else:
+        return next_state, -1
+
+def epsilon_greedy(state):
+    if random.uniform(0, 1) < EPSILON:
+        return random.choice(ACTIONS)
+    else:
+        q_vals = [Q.get((state, a), 0) for a in ACTIONS]
+        return ACTIONS[np.argmax(q_vals)]
+
+# Q-Learning Training
+for _ in range(EPISODES):
+    state = (0, 0)
+
+    while state != food:
+        action = epsilon_greedy(state)
+        next_state, reward = step(state, action)
+
+        # Q-Learning update
+        best_next = max([Q.get((next_state, a), 0) for a in ACTIONS])
+
+        Q[(state, action)] = Q.get((state, action), 0) + ALPHA * (
+            reward + GAMMA * best_next - Q.get((state, action), 0)
+        )
+
+        state = next_state
+
+# Display learned policy
+print("Optimal Policy:")
+for i in range(GRID_SIZE):
+    for j in range(GRID_SIZE):
+        state = (i, j)
+        q_vals = [Q.get((state, a), 0) for a in ACTIONS]
+        best_action = ACTIONS[np.argmax(q_vals)]
+        print(f"{state} -> {best_action}")
