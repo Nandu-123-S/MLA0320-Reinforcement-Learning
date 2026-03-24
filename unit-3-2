@@ -1,0 +1,47 @@
+import numpy as np
+import random
+from tensorflow.keras import models, layers
+
+# Simple environment
+def step(state, action):
+    speed, dist = state
+    if action == 0: speed += 1   # accelerate
+    else: speed -= 1             # brake
+
+    dist -= speed
+    reward = -1
+
+    if dist <= 0:
+        reward = 10
+
+    return (speed, dist), reward
+
+# DQN model
+model = models.Sequential([
+    layers.Dense(24, activation='relu', input_shape=(2,)),
+    layers.Dense(24, activation='relu'),
+    layers.Dense(2, activation='linear')
+])
+
+model.compile(optimizer='adam', loss='mse')
+
+# Training
+for _ in range(200):
+    state = np.array([1, 10])
+
+    for _ in range(20):
+        if random.random() < 0.1:
+            action = random.randint(0,1)
+        else:
+            action = np.argmax(model.predict(state.reshape(1,-1), verbose=0))
+
+        next_state, reward = step(state, action)
+
+        target = reward + 0.9 * np.max(model.predict(np.array(next_state).reshape(1,-1), verbose=0))
+        target_f = model.predict(state.reshape(1,-1), verbose=0)
+        target_f[0][action] = target
+
+        model.fit(state.reshape(1,-1), target_f, epochs=1, verbose=0)
+        state = np.array(next_state)
+
+print("DQN Training Done")
