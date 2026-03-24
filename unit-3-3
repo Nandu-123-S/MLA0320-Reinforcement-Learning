@@ -1,0 +1,33 @@
+import numpy as np
+
+GRID = 5
+ACTIONS = 4
+
+policy = np.random.rand(GRID, GRID, ACTIONS)
+
+def choose_action(state):
+    probs = policy[state[0], state[1]]
+    probs = probs / np.sum(probs)
+    return np.random.choice(ACTIONS, p=probs)
+
+def step(state, action):
+    x, y = state
+    if action == 0: x = max(0, x-1)
+    elif action == 1: x = min(GRID-1, x+1)
+    elif action == 2: y = max(0, y-1)
+    elif action == 3: y = min(GRID-1, y+1)
+    return (x, y), -1
+
+# Simplified PPO update
+for _ in range(200):
+    state = (0, 0)
+    for _ in range(10):
+        action = choose_action(state)
+        next_state, reward = step(state, action)
+
+        # Clip update (simplified)
+        policy[state[0], state[1], action] += 0.01 * reward
+
+        state = next_state
+
+print("PPO Training Done")
