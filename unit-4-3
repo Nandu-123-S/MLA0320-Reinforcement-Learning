@@ -1,0 +1,23 @@
+import numpy as np
+
+days = 50
+inventory = 20
+
+def demand():
+    return np.random.randint(0, 10)
+
+profit = 0
+
+for day in range(days):
+    d = demand()
+
+    sold = min(inventory, d)
+    inventory -= sold
+
+    # restock policy
+    if inventory < 5:
+        inventory += 10
+
+    profit += sold * 2 - 1  # revenue - cost
+
+print("Total Profit:", profit)
