@@ -1,0 +1,62 @@
+import numpy as np
+import random
+
+# Grid size
+GRID_SIZE = 5
+ACTIONS = ['up', 'down', 'left', 'right']
+
+# Parameters
+ALPHA = 0.1
+GAMMA = 0.9
+EPISODES = 500
+
+# Initialize value function
+V = np.zeros((GRID_SIZE, GRID_SIZE))
+
+goal = (4, 4)
+trap = (2, 2)
+
+def step(state, action):
+    x, y = state
+
+    if action == 'up':
+        x = max(0, x - 1)
+    elif action == 'down':
+        x = min(GRID_SIZE - 1, x + 1)
+    elif action == 'left':
+        y = max(0, y - 1)
+    elif action == 'right':
+        y = min(GRID_SIZE - 1, y + 1)
+
+    next_state = (x, y)
+
+    # Rewards
+    if next_state == goal:
+        return next_state, 10
+    elif next_state == trap:
+        return next_state, -10
+    else:
+        return next_state, -1
+
+def random_policy():
+    return random.choice(ACTIONS)
+
+# TD(0) Learning
+for _ in range(EPISODES):
+    state = (0, 0)
+
+    while state != goal:
+        action = random_policy()
+        next_state, reward = step(state, action)
+
+        x, y = state
+        nx, ny = next_state
+
+        # TD(0) update
+        V[x, y] = V[x, y] + ALPHA * (reward + GAMMA * V[nx, ny] - V[x, y])
+
+        state = next_state
+
+# Display value function
+print("State Value Function:")
+print(np.round(V, 2))
