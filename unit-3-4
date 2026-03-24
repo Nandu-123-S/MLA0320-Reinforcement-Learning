@@ -1,0 +1,19 @@
+import numpy as np
+import random
+
+policy = np.zeros((9, 9))  # state-action
+
+def choose_action(state):
+    probs = np.exp(policy[state]) / np.sum(np.exp(policy[state]))
+    return np.random.choice(9, p=probs)
+
+# Simplified training
+for _ in range(500):
+    state = random.randint(0, 8)
+    action = choose_action(state)
+
+    reward = random.choice([1, -1])  # simulate win/lose
+
+    policy[state, action] += 0.01 * reward
+
+print("Tic-Tac-Toe Agent Trained")
