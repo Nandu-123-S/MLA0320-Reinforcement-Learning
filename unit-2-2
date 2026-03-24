@@ -1,0 +1,85 @@
+import numpy as np
+import random
+
+# Grid size
+GRID_SIZE = 5
+ACTIONS = ['up', 'down', 'left', 'right']
+
+# Initialize Q-table
+Q = {}
+returns = {}
+policy = {}
+
+# Parameters
+EPISODES = 500
+GAMMA = 0.9
+EPSILON = 0.1
+
+goal = (4, 4)
+
+def step(state, action):
+    x, y = state
+
+    if action == 'up':
+        x = max(0, x - 1)
+    elif action == 'down':
+        x = min(GRID_SIZE - 1, x + 1)
+    elif action == 'left':
+        y = max(0, y - 1)
+    elif action == 'right':
+        y = min(GRID_SIZE - 1, y + 1)
+
+    next_state = (x, y)
+
+    if next_state == goal:
+        return next_state, 10
+    else:
+        return next_state, -1
+
+def epsilon_greedy(state):
+    if random.uniform(0, 1) < EPSILON:
+        return random.choice(ACTIONS)
+    else:
+        q_vals = [Q.get((state, a), 0) for a in ACTIONS]
+        return ACTIONS[np.argmax(q_vals)]
+
+# Monte Carlo Control
+for _ in range(EPISODES):
+    state = (0, 0)
+    episode = []
+
+    # Generate episode
+    while state != goal:
+        action = epsilon_greedy(state)
+        next_state, reward = step(state, action)
+        episode.append((state, action, reward))
+        state = next_state
+
+    # Calculate returns
+    G = 0
+    visited = set()
+
+    for t in reversed(range(len(episode))):
+        s, a, r = episode[t]
+        G = GAMMA * G + r
+
+        if (s, a) not in visited:
+            visited.add((s, a))
+
+            if (s, a) not in returns:
+                returns[(s, a)] = []
+
+            returns[(s, a)].append(G)
+            Q[(s, a)] = np.mean(returns[(s, a)])
+
+# Extract policy
+for i in range(GRID_SIZE):
+    for j in range(GRID_SIZE):
+        state = (i, j)
+        q_vals = [Q.get((state, a), 0) for a in ACTIONS]
+        best_action = ACTIONS[np.argmax(q_vals)]
+        policy[state] = best_action
+
+print("Optimal Policy:")
+for key, val in policy.items():
+    print(key, "->", val)
