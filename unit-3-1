@@ -1,0 +1,65 @@
+import numpy as np
+import random
+
+GRID = 5
+ACTIONS = ['up', 'down', 'left', 'right']
+GAMMA = 0.9
+ALPHA = 0.01
+EPISODES = 500
+
+# Random dirt and obstacles
+dirt = {(1,1), (2,3), (4,4)}
+obstacles = {(2,2), (3,1)}
+
+# Policy parameters (preferences)
+theta = np.zeros((GRID, GRID, len(ACTIONS)))
+
+def softmax(x):
+    e = np.exp(x - np.max(x))
+    return e / e.sum()
+
+def choose_action(state):
+    probs = softmax(theta[state[0], state[1]])
+    return np.random.choice(ACTIONS, p=probs)
+
+def step(state, action):
+    x, y = state
+
+    if action == 'up': x = max(0, x-1)
+    elif action == 'down': x = min(GRID-1, x+1)
+    elif action == 'left': y = max(0, y-1)
+    elif action == 'right': y = min(GRID-1, y+1)
+
+    next_state = (x, y)
+
+    if next_state in obstacles:
+        return state, -1
+    elif next_state in dirt:
+        return next_state, 1
+    else:
+        return next_state, 0
+
+# Training
+for _ in range(EPISODES):
+    state = (0, 0)
+    episode = []
+
+    for _ in range(20):
+        action = choose_action(state)
+        next_state, reward = step(state, action)
+        episode.append((state, action, reward))
+        state = next_state
+
+    # Compute returns
+    G = 0
+    for t in reversed(range(len(episode))):
+        s, a, r = episode[t]
+        G = GAMMA * G + r
+
+        a_idx = ACTIONS.index(a)
+        probs = softmax(theta[s[0], s[1]])
+
+        # Policy gradient update
+        theta[s[0], s[1], a_idx] += ALPHA * G * (1 - probs[a_idx])
+
+print("Training Complete (REINFORCE)")
