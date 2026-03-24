@@ -1,0 +1,31 @@
+import numpy as np
+import random
+
+start = (0, 0)
+goal = (9, 9)
+tree = [start]
+
+def distance(a, b):
+    return np.linalg.norm(np.array(a) - np.array(b))
+
+def nearest(tree, point):
+    return min(tree, key=lambda x: distance(x, point))
+
+def steer(from_node, to_node):
+    return (
+        from_node[0] + np.sign(to_node[0] - from_node[0]),
+        from_node[1] + np.sign(to_node[1] - from_node[1])
+    )
+
+# RRT
+for _ in range(200):
+    rand_point = (random.randint(0,9), random.randint(0,9))
+    near = nearest(tree, rand_point)
+    new = steer(near, rand_point)
+
+    tree.append(new)
+
+    if new == goal:
+        break
+
+print("Path Found:", tree)
