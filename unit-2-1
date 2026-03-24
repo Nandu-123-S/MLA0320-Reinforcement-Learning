@@ -1,0 +1,63 @@
+import numpy as np
+
+# Parameters
+MAX_CARS = 5
+ACTIONS = [0, 1]  # 0 = NS green, 1 = EW green
+GAMMA = 0.9
+
+# Initialize policy randomly
+policy = np.zeros((MAX_CARS, MAX_CARS), dtype=int)
+
+# Value function
+V = np.zeros((MAX_CARS, MAX_CARS))
+
+def reward(state):
+    # Negative waiting cars
+    return -(state[0] + state[1])
+
+def next_state(state, action):
+    ns, ew = state
+
+    # Cars leaving
+    if action == 0:  # NS green
+        ns = max(0, ns - 2)
+    else:  # EW green
+        ew = max(0, ew - 2)
+
+    # Cars arriving randomly
+    ns = min(MAX_CARS - 1, ns + np.random.randint(0, 2))
+    ew = min(MAX_CARS - 1, ew + np.random.randint(0, 2))
+
+    return (ns, ew)
+
+# Policy Iteration
+stable = False
+while not stable:
+    # Policy Evaluation
+    for _ in range(50):
+        for i in range(MAX_CARS):
+            for j in range(MAX_CARS):
+                action = policy[i, j]
+                ns, ew = next_state((i, j), action)
+                V[i, j] = reward((i, j)) + GAMMA * V[ns, ew]
+
+    # Policy Improvement
+    stable = True
+    for i in range(MAX_CARS):
+        for j in range(MAX_CARS):
+            old_action = policy[i, j]
+            values = []
+
+            for action in ACTIONS:
+                ns, ew = next_state((i, j), action)
+                val = reward((i, j)) + GAMMA * V[ns, ew]
+                values.append(val)
+
+            best_action = np.argmax(values)
+            policy[i, j] = best_action
+
+            if old_action != best_action:
+                stable = False
+
+print("Optimal Policy (0=NS, 1=EW):")
+print(policy)
