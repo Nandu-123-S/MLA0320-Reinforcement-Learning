@@ -1,0 +1,24 @@
+import numpy as np
+
+states = 5
+actions = 3  # increase, decrease, maintain
+
+policy = np.random.rand(states, actions)
+
+def normalize(p):
+    return p / np.sum(p)
+
+for _ in range(200):
+    for s in range(states):
+        old_policy = policy[s].copy()
+
+        reward = np.random.randn()  # simulate energy cost
+
+        # Small constrained update
+        policy[s] += 0.01 * reward
+
+        # Keep policy stable (trust region)
+        policy[s] = 0.9 * old_policy + 0.1 * policy[s]
+        policy[s] = normalize(policy[s])
+
+print("TRPO Training Done")
