@@ -1,0 +1,18 @@
+import random
+
+agents = ["A1", "A2"]
+
+def step(actions):
+    if actions["A1"] == actions["A2"]:
+        return 5   # cooperation reward
+    else:
+        return -1
+
+for _ in range(10):
+    actions = {
+        "A1": random.choice(["left","right"]),
+        "A2": random.choice(["left","right"])
+    }
+
+    reward = step(actions)
+    print(actions, "Reward:", reward)
