@@ -1,0 +1,15 @@
+def navigate():
+    return "Navigating..."
+
+def pick():
+    return "Picking item"
+
+def deliver():
+    return "Delivering item"
+
+def maxq():
+    print(navigate())
+    print(pick())
+    print(deliver())
+
+maxq()
