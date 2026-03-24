@@ -1,0 +1,16 @@
+import numpy as np
+
+param = 1.0
+
+def environment(condition):
+    return condition * param
+
+# Meta-learning loop
+for condition in [1, 2, 3]:
+    output = environment(condition)
+    error = (10 - output)
+
+    # adapt parameter
+    param += 0.1 * error
+
+    print(f"Condition {condition}, Param:", param)
